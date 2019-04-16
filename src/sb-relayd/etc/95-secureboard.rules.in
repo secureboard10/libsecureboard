@@ -1,0 +1,1 @@
+SUBSYSTEM=="usb", ENV{ID_VENDOR_ID}=="046a", ENV{ID_MODEL_ID}=="01a2", ACTION=="add", SYMLINK+="secureboard-$env{ID_SERIAL_SHORT}", TAG+="systemd", ENV{SYSTEMD_WANTS}+="sb-relayd@$env{ID_SERIAL_SHORT}.service"

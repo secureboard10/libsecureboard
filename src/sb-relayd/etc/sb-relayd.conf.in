@@ -1,0 +1,19 @@
+version = "1.0";
+
+secureboard: {
+  # default rule bind secureboard to abstrac unix socket @SECUREBOARD1.0-${serial}
+  default: {
+    socket: {
+      type = "unix";
+      file = "SECUREBOARD1.0-${serial}";
+    };
+  };
+  # rule to bind SECUREBOARD 1.0 with Serial `00000002JS0405948N5LI0OTHA` to a inet socket 127.0.0.1:12345
+  # serial-00000002JS0405948N5LI0OTHA: {
+  #   socket: {
+  #     type = "inet";
+  #     bind = "127.0.0.1";
+  #     port = 12345;
+  #   };
+  # };
+};

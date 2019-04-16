@@ -1,0 +1,10 @@
+[Unit]
+Description="SECUREBOARD1.0 Relay Daemon %i"
+BindsTo=dev-secureboard\x2d%i.device
+
+[Service]
+Type=simple
+ExecStart=@CMAKE_INSTALL_PREFIX@/sbin/sb-relayd -c @CMAKE_INSTALL_PREFIX@/etc/sb-relayd.conf -s %i
+
+[Install]
+WantedBy=dev-secureboard\x2d%i.device
