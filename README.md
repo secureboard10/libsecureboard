@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/libsecureboard10/secureboard.svg?branch=master)](https://travis-ci.org/secureboard10/libsecureboard)
+
 # General Notes
 
 SECUREBOARD1.0 implement only a subset of requirements for TLS13 server.
