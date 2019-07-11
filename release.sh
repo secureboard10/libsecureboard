@@ -32,6 +32,6 @@ if [ $BUILDDOC == 1 ]; then
 fi
 mkdir -p $OUTPUT_DIRECTORY
 cd $OUTPUT_DIRECTORY && cmake $DIR -DCMAKE_INSTALL_PREFIX=
-make -C $OUTPUT_DIRECTORY
+make -k -C $OUTPUT_DIRECTORY
 make -C $OUTPUT_DIRECTORY DESTDIR=$OUTPUT_DIRECTORY/libsecureboard install
 cd $OUTPUT_DIRECTORY && tar --transform "s/^libsecureboard/libsecureboard-$VERSION/" -czvf libsecureboard-$VERSION$HASH.tar.gz libsecureboard
