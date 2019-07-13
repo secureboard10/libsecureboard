@@ -6,10 +6,24 @@ language: c
 # gcc 4.8.1 dows not support stdatomic
 # see https://gcc.gnu.org/bugzilla/show_bug.cgi?id=58016
 
-# Setup the matrix to use gcc-5, 6, and 7
+# Setup the matrix to use gcc-4.9, 5, 6, and 7
 matrix:
     include:
     # works on Precise and Trusty
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-4.9
+            - libevdev-dev
+            - libudev-dev
+            - libconfig-dev
+            - libhidapi-dev
+      env:
+        - MATRIX_EVAL="CC=gcc-4.9 && CXX=g++-4.9"
+
     - os: linux
       addons:
         apt:
