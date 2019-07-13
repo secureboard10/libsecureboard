@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/libsecureboard10/secureboard.svg?branch=master)](https://travis-ci.org/secureboard10/libsecureboard)
+[![Build Status](https://travis-ci.com/secureboard10/libsecureboard.svg?branch=master)](https://travis-ci.com/secureboard10/libsecureboard)
 
 # General Notes
 
