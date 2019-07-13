@@ -79,7 +79,8 @@ static int hid_transmit_record(hid_device *hid_dev, const uint8_t *record)
 
         // copy data and pad
         memcpy(&b[1], record + pos, remain);
-        memset(&b[1 + remain], 0xff, 64 - remain);
+        if (64 - remain)
+            memset(&b[1 + remain], 0xff, 64 - remain);
 
         // Failed to communicate with device -> terminate
         if (hid_write(hid_dev, b, sizeof(b)) < 0) {
