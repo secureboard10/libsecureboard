@@ -1,0 +1,7 @@
+language: c
+
+script:
+  - ./release.sh
+
+before_install:
+  - sudo apt-get install -y libevdev-dev libudev-dev libconfig-dev libhidapi-dev

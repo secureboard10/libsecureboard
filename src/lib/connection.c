@@ -665,7 +665,9 @@ int secureboard_disarm_timer(secureboard_connection_t *sb)
 
     while ((res = poll(pollfds, 1, 0)) > 0) {
         uint64_t _; // just a
-        read(sb->timer_fd, &_, 8);
+        res = read(sb->timer_fd, &_, 8);
+        if (res < 0)
+            break;
         pollfds[0].revents = 0;
     };
 
