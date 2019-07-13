@@ -172,7 +172,7 @@ void evdev_input_report(struct evdev_t *dev, const uint8_t *report, unsigned len
 
     // Check for key release events
     for (p = &dev->keys_down[0]; *p; p++) {
-        if (!_is_key_in_expended_report(&expanded_report, *p)) {
+        if (!_is_key_in_expended_report((const keys_down_t*)&expanded_report, *p)) {
             libevdev_uinput_write_event(dev->ui,
                                         EV_KEY,
                                         usb_kbd_keycode[*p],
@@ -184,7 +184,7 @@ void evdev_input_report(struct evdev_t *dev, const uint8_t *report, unsigned len
     }
     // Check for key down events
     for (p = &expanded_report[0]; *p; p++) {
-        if (!_is_key_in_expended_report(&dev->keys_down, *p)) {
+        if (!_is_key_in_expended_report((const keys_down_t*)&dev->keys_down, *p)) {
             libevdev_uinput_write_event(dev->ui,
                                         EV_KEY,
                                         usb_kbd_keycode[*p],

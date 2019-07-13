@@ -1,7 +1,73 @@
 language: c
 
-script:
-  - ./release.sh
+# trusty does not support new compilers (e.g: gcc-5). As stdaomic.h is
+# used a recent gcc is required.
+
+# gcc 4.8.1 dows not support stdatomic
+# see https://gcc.gnu.org/bugzilla/show_bug.cgi?id=58016
+
+# Setup the matrix to use gcc-4.9, 5, 6, and 7
+matrix:
+    include:
+    # works on Precise and Trusty
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-4.9
+            - libevdev-dev
+            - libudev-dev
+            - libconfig-dev
+            - libhidapi-dev
+      env:
+        - MATRIX_EVAL="CC=gcc-4.9 && CXX=g++-4.9"
+
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-5
+            - libevdev-dev
+            - libudev-dev
+            - libconfig-dev
+            - libhidapi-dev
+      env:
+        - MATRIX_EVAL="CC=gcc-5 && CXX=g++-5"
+
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-6
+            - libevdev-dev
+            - libudev-dev
+            - libconfig-dev
+            - libhidapi-dev
+      env:
+        - MATRIX_EVAL="CC=gcc-6 && CXX=g++-6"
+
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-7
+            - libevdev-dev
+            - libudev-dev
+            - libconfig-dev
+            - libhidapi-dev
+      env:
+        - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
 
 before_install:
-  - sudo apt-get install -y libevdev-dev libudev-dev libconfig-dev libhidapi-dev
+  - eval "${MATRIX_EVAL}"
+
+script:
+  - ./release.sh

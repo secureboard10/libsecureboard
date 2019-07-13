@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/libsecureboard10/secureboard.svg?branch=master)](https://travis-ci.org/secureboard10/libsecureboard)
+[![Build Status](https://travis-ci.com/secureboard10/libsecureboard.svg?branch=master)](https://travis-ci.com/secureboard10/libsecureboard)
 
 # General Notes
 
@@ -23,6 +23,8 @@ The most notable restrictions are:
 
 # Build
 
+## Checkout
+
 This repository contains an *openssl* as submodule call
 
    ```
@@ -31,6 +33,21 @@ This repository contains an *openssl* as submodule call
    ```
 
 after clone/checkout.
+
+## Build Dependencies
+
+The following libraries are required:
+
+* libevdev-dev
+* libudev-dev
+* libconfig-dev
+* libhidapi-dev
+
+The project should compile with gcc versions 4.9 and later. gcc 4.8.1
+does not work (see
+https://gcc.gnu.org/bugzilla/show_bug.cgi?id=58016).
+
+## Build
 
 The simplest way to build the project is to call
 
