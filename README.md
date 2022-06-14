@@ -14,7 +14,7 @@ The most notable restrictions are:
 * All handshake messages (except Certificate) are restricted to 475
   bytes.
 
-* Client Certificates within the Certificate message are restricted to
+* Client certificates within the Certificate message are restricted to
   475 bytes (for each certificate separately).
 
 * Clients must support and offer the proprietary extension
@@ -23,9 +23,39 @@ The most notable restrictions are:
 
 # Build
 
+## Build Dependencies
+
+The following libraries are required:
+
+* a recent C compiler and build tools
+* cmake
+* git
+* libevdev-dev
+* libudev-dev
+* libconfig-dev
+* libhidapi-dev
+
+When using Debian and derivates (e.g.: Ubuntu) use the following CLI
+command:
+
+   ```
+   sudo apt install \
+     build-essential \
+     cmake \
+     git \
+     libevdev-dev \
+     libudev-dev \
+     libconfig-dev\
+     libhidapi-dev
+   ```
+
+The project should compile with GCC versions 4.9 and later. GCC 4.8.1
+does not work (see
+https://gcc.gnu.org/bugzilla/show_bug.cgi?id=58016).
+
 ## Checkout
 
-This repository contains an *openssl* as submodule call
+This repository contains *OpenSSL* as a submodule. Call
 
    ```
    git submodule update --init --recursive
@@ -33,19 +63,6 @@ This repository contains an *openssl* as submodule call
    ```
 
 after clone/checkout.
-
-## Build Dependencies
-
-The following libraries are required:
-
-* libevdev-dev
-* libudev-dev
-* libconfig-dev
-* libhidapi-dev
-
-The project should compile with gcc versions 4.9 and later. gcc 4.8.1
-does not work (see
-https://gcc.gnu.org/bugzilla/show_bug.cgi?id=58016).
 
 ## Build
 
@@ -55,7 +72,7 @@ The simplest way to build the project is to call
    ./release.sh
    ```
 
-to produce binaries in `.build`. See the script it self for details.
+to generate binaries in `.build`. See the script itself for details.
 
 # Certificate Trust Chain
 
@@ -64,10 +81,13 @@ to produce binaries in `.build`. See the script it self for details.
   Cherry Secure Board CA -> Theobroma Systems Production Certificate -> SECUREBOARD Device Certificate
 
 * The certificates (public part) are maintained and published at
+  GitHub and can be downloaded by using the following command:
 
-  https://github.com/secureboard10/secureboard-ca.
+    ```
+    git clone https://github.com/secureboard10/secureboard-ca
+    ```
 
-  After downloading/updating your local copy. Prepare it for use with openssl:
+  After downloading/updating your local copy. Prepare it for use with OpenSSL:
 
     ```
     c_rehash <path-to-ca>
@@ -86,14 +106,14 @@ to produce binaries in `.build`. See the script it self for details.
 
 * This trust chain can only be used to verify that the device genuineness, and for device personalizing.
 
-* To allow to operate in *Secure Keyboard Mode* a *User Certificate*
+* To allow operating in *Secure Keyboard Mode* a *User Certificate*
   and *User Key* **must** be loaded into the device.
 
-  Thus step must be executed in a *Secure Environment* (e.g.: offline PC).
+  These step should be executed in a *Secure Environment* (e.g.: offline PC).
 
 # Relay Daemon (sb-relayd)
 
-*sb-relayd* is a service the relays TLS1.3 records between secure
+*sb-relayd* is a service that relays TLS1.3 records between secure
 boards and libsecureboard. It has to be started after the SECUREBOARD
 1.0 is connected. Systemd and udev rules are provided in this
 repository.
@@ -108,6 +128,12 @@ work with systemd/udev:
    /lib/systemd/system/sb-relayd@.service
    ```
 
+Alternatively, you can install the tools into your system root from the freshly built artifacts. Those are located in `.build`
+
+   ```
+   sudo make -C .build install
+   ```
+
 After installing the files and reload the rules:
 
    ```
@@ -116,7 +142,7 @@ After installing the files and reload the rules:
    sudo udevadm trigger
    ```
 
-and after reconnecting a SECUREBOARD 1.0 the a service should show
+and after reconnecting a SECUREBOARD 1.0 the service should show
 up:
 
    ```
@@ -157,14 +183,19 @@ Restrictions:
 
 2) The size of the DER encoded certificate must no exeed 572 bytes.
 
-Example to cCreate a Root CA (Keep subject short to to fit into the 572 limit):
+Note, that the default config (value for CONFIGFILE below) file is
+located at <path-to>/libsecureboard/tools/openssl.cnf.
+
+Example to create a Root CA (Keep subject short to fit into the 572 bytes limit):
 
    ```
-   export CADIR=<path-to-your-ca>
-   export KEYDIR=<path-to-a-secure-storage>
-   export CONFIGFILE=<path-to-openssl.cnf>
+   export CADIR=<absolute-path-to-your-ca>
+   export KEYDIR=<absolute-path-to-a-secure-storage>
+   export CONFIGFILE=<absolute-path-to-openssl.cnf>
    export USER_DEVICE_ROOT_CA=device_root_ca
 
+   mkdir -p $CADIR
+   mkdir -p $KEYDIR
    cd $CADIR
    openssl req -days 3650 -config $CONFIGFILE -sha256 -new -x509 \
       -newkey ec:<(openssl ecparam -name prime256v1)             \
@@ -175,24 +206,26 @@ Example to cCreate a Root CA (Keep subject short to to fit into the 572 limit):
 
 If you have multiple SECUREBOARD 1.0 you can reuse the Root CA for multiple devices.
 
-Example; Create and sign a Device Certificate (Keep subject short to to fit into the 572 limit):
+Example; Create and sign a Device Certificate (Keep subject short to to fit into the 572 bytes limit):
 
    ```
    export TMPDIR=/tmp
    export USER_DEVICE=device01
    cd $TMPDIR
+   openssl ecparam -name prime256v1 > ecparam.prime256v1.pem &&  \
    openssl req -config $CONFIGFILE -sha256 -new                  \
-       -newkey ec:<(openssl ecparam -name prime256v1)            \
+       -newkey ec:ecparam.prime256v1.pem                         \
        -subj "/C=AT/O=User Company/CN=$USER_DEVICE"              \
-       -keyout $USER_DEVICE-key.pem -out $USER_DEVICE-csr.pem
+       -keyout $USER_DEVICE-key.pem -out $USER_DEVICE-csr.pem && \
    openssl x509 -sha256 -days 3650 -req -in $USER_DEVICE-csr.pem \
        -CA $CADIR/$USER_DEVICE_ROOT_CA.pem                       \
        -CAkey $KEYDIR/$USER_DEVICE_ROOT_CA-key.pem               \
        -extfile $(dirname $CONFIGFILE)/production.ext            \
        -CAcreateserial -out $USER_DEVICE.der --outform DER
 
-   # certificate signing request is no longer required
-   rm $TMPDIR/$USER_DEVICE-csr.pem
+   # certificate signing request (CSR) and the curve paramters are no
+   # longer required.
+   rm $TMPDIR/$USER_DEVICE-csr.pem ecparam.prime256v1.pem
    ```
 
 If you have more than one SECUREBOARD 1.0 it is highly recommended to
@@ -200,7 +233,7 @@ create a unique certificate for each device you own.
 
 ## Uploading
 
-After creating the Certificates they have to be uploaded to the Device:
+After creating the certificates they have to be uploaded to the device:
 
    ```
    # Assuming sb-relayd is running in default configuration
@@ -218,14 +251,14 @@ After creating the Certificates they have to be uploaded to the Device:
 
 Restrictions:
 
-1) The size of the DER encoded certificate must no exceed 475
+1) The size of the DER encoded certificate must not exceed 475
    bytes. This applies to each certificate in the chain (including the
    root certificate).
 
    If you use the root CA also for client certificates (which is
    possible), the 475 byte restriction also applies to the root CA.
 
-Once a root CA is initialized with a fingerprint the device requests a
+Once a root CA is initialized with a fingerprint, the device requests a
 client certificate when connecting not using a PSK session. The client
 *must* send the complete certificate chain and starting with the
 client certificate (use a --ca-dir with a directory containing all
@@ -242,21 +275,21 @@ A connection is accepted if:
    item in the chain matches the fingerprint of the root CA. This
    certificate may or may not be self signed.
 
-3) The client can proof that it posses the private key of the client
+3) The client can prove that it possesses the private key of the client
    certificate by generating a valid signature of the handshake
    traffic (see TLS13 CertificateVerify).
 
 Notes on client certificates:
 
-The devices memory and computation power is restricted. The following
+The device's memory and computation power is restricted. The following
 limitations apply:
 
 1) The DER encoded size of each certificate in the chain must not
-   exceed 475 bytes. Especially when using Verision 3 certificated
+   exceed 475 bytes. Especially when using Version 3 certificated
    this can oppose a limitation.  Secure board accepts Version 3
    certificates, but does *NOT ENCFORCE* them.
 
-   To print the size of the DER encoded certificate the following CLI
+   To print the size of the DER encoded certificate, the following CLI
    can be used:
 
    ```
@@ -274,31 +307,32 @@ limitations apply:
 1) Generate the root CA (Especially when using longer subjects, verify
    the certificate length). Use the same commands as for the Device
    Certificate root CA. You may even use the Device Certificate Root
-   CA to sign you client certificates.
+   CA to sign your client certificates.
 
-2) Generate one or more Client Certificates signed by the root ca:
+2) Generate one or more Client Certificates signed by the root CA:
 
    ```
    export CLIENT_NAME=bob
    cd $CADIR
-   openssl req -config $CONFIGFILE -sha256 -new                       \
-       -newkey ec:<(openssl ecparam -name prime256v1)                 \
-       -subj "/C=AT/O=User Company/CN=$CLIENT_NAME"                   \
-       -keyout $KEYDIR/$CLIENT_NAME-key.pem -out $CLIENT_NAME-csr.pem
-   openssl x509 -sha256 -days 365 -req                                \
-       -in $CLIENT_NAME-csr.pem -CA $CADIR/$USER_DEVICE_ROOT_CA.pem   \
-       -CAkey $KEYDIR/$USER_DEVICE_ROOT_CA-key.pem                    \
-       -extfile $(dirname $CONFIGFILE)/device.ext                     \
+   openssl ecparam -name prime256v1 > ecparam.prime256v1.pem &&          \
+   openssl req -config $CONFIGFILE -sha256 -new                          \
+       -newkey ec:ecparam.prime256v1.pem                                 \
+       -subj "/C=AT/O=User Company/CN=$CLIENT_NAME"                      \
+       -keyout $KEYDIR/$CLIENT_NAME-key.pem -out $CLIENT_NAME-csr.pem && \
+   openssl x509 -sha256 -days 365 -req                                   \
+       -in $CLIENT_NAME-csr.pem -CA $CADIR/$USER_DEVICE_ROOT_CA.pem      \
+       -CAkey $KEYDIR/$USER_DEVICE_ROOT_CA-key.pem                       \
+       -extfile $(dirname $CONFIGFILE)/device.ext                        \
        -CAcreateserial -out $CADIR/$CLIENT_NAME.pem
-   rm $CLIENT_NAME-csr.pem
-   c_rehash $CADIR		     
+   rm $CLIENT_NAME-csr.pem ecparam.prime256v1.pem
+   c_rehash $CADIR
    ```
 
 ## Upload the Client Root CA into the SECUREBOARD 1.0
 
    ```
    # Note, that since the CA has already been provisioned into the
-   # SECUREBOARD 1.0 # the --ca-dir option changed.   
+   # SECUREBOARD 1.0 # the --ca-dir option changed.
    sb-tool                                \
        -u @SECUREBOARD1.0-<device-serial> \
        --ca-dir $CADIR                    \
@@ -307,4 +341,4 @@ limitations apply:
 
 # TODOs
 
-* Extend sb-relayd to support non abstract AF_UNIT sockets
+* Extend sb-relayd to support non-abstract AF_UNIT sockets
